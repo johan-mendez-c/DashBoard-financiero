@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Dashboard Financiero Pro</title>
+    <!-- Tailwind CSS para diseño moderno -->
+    <script src='https://cdn.tailwindcss.com'></script>
+    <!-- Chart.js para gráficos interactivos hermosos -->
+    <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
+    <style>
+        .gradient-bg { 
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
+        }
+        .card-custom {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card-custom:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        .tab-active {
+            border-bottom: 4px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class='bg-slate-50 font-sans min-h-screen'>
+
+    <!-- Header -->
+    <header class='gradient-bg text-white py-8 px-6 shadow-lg mb-8 text-center'>
+        <h1 class='text-4xl font-extrabold tracking-tight'>📊 Dashboard Financiero Interactivo</h1>
+        <p class='text-blue-100 mt-2 text-lg'>Matemáticas Financieras • Herramienta de Simulación y Análisis Profesional</p>
+    </header>
+
+    <main class='max-w-7xl mx-auto px-4 pb-16'>
+        <!-- Tabs Nav -->
+        <div class='flex flex-wrap justify-center space-x-2 border-b border-gray-200 mb-8 bg-white p-2 rounded-lg shadow-sm'>
+            <button onclick="switchTab('compuesto')" id="tab-compuesto" class='tab-btn px-6 py-3 text-gray-600 hover:text-blue-600 transition tab-active'>
+                💵 Interés Compuesto y Tasas
+            </button>
+            <button onclick="switchTab('anualidades')" id="tab-anualidades" class='tab-btn px-6 py-3 text-gray-600 hover:text-blue-600 transition'>
+                📈 Anualidades y Gradientes
+            </button>
+            <button onclick="switchTab('vpn')" id="tab-vpn" class='tab-btn px-6 py-3 text-gray-600 hover:text-blue-600 transition'>
+                💼 VPN y Proyectos
+            </button>
+            <button onclick="switchTab('casos')" id="tab-casos" class='tab-btn px-6 py-3 text-gray-600 hover:text-blue-600 transition'>
+                🚗 Casos Reales
+            </button>
+            <button onclick="switchTab('ejercicios')" id="tab-ejercicios" class='tab-btn px-6 py-3 text-gray-600 hover:text-blue-600 transition'>
+                ✍️ Retos de Clase
+            </button>
+        </div>
+
+        <!-- TAB: COMPUESTO Y TASAS -->
+        <div id='content-compuesto' class='tab-content grid grid-cols-1 lg:grid-cols-3 gap-8'>
+            <div class='bg-white p-6 rounded-2xl shadow-md border border-gray-100 card-custom lg:col-span-1'>
+                <h2 class='text-xl font-bold text-gray-800 mb-6 border-b pb-2 flex items-center'><span class='mr-2'>⚙️</span> Parámetros</h2>
+                
+                <div class='mb-4'>
+                    <label class='block text-gray-700 font-medium mb-1'>Capital Inicial (P):</label>
+                    <input type='number' id='ic-capital' value='1000000' class='w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200'>
+                </div>
+                <div class='mb-4'>
+                    <label class='block text-gray-700 font-medium mb-1'>Tasa de Interés (%):</label>
+                    <input type='number' id='ic-tasa' value='2' step='0.1' class='w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200'>
+                </div>
+                <div class='mb-6'>
+                    <label class='block text-gray-700 font-medium mb-1'>Periodos (n):</label>
+                    <input type='number' id='ic-periodos' min='1' max='600' step='1' value='12' class='w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200'>
+                </div>
+                <button onclick='calcularInteresCompuesto()' class='w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition shadow-md'>Calcular y Graficar</button>
+            </div>
+
+            <div class='lg:col-span-2 space-y-6'>
+                <div class='bg-white p-6 rounded-2xl shadow-md border border-gray-100'>
+                    <h3 class='text-xl font-bold text-gray-800 mb-4'>📈 Evolución del Capital</h3>
+                    <div style='height: 300px;'><canvas id='chart-compuesto'></canvas></div>
+                </div>
+                <div class='bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-6 rounded-2xl shadow-md flex justify-between items-center'>
+                    <div>
+                        <p class='text-emerald-100 text-sm font-semibold uppercase tracking-wider'>Valor Futuro Acumulado</p>
+                        <h3 id='ic-resultado' class='text-3xl font-black mt-1'>$0.00</h3>
+                    </div>
+                    <div class='text-right'>
+                        <p class='text-emerald-100 text-sm'>Intereses Generados</p>
+                        <p id='ic-intereses' class='text-2xl font-bold mt-1'>$0.00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: ANUALIDADES Y GRADIENTES -->
+        <div id='content-anualidades' class='tab-content hidden grid grid-cols-1 lg:grid-cols-3 gap-8'>
+            <div class='bg-white p-6 rounded-2xl shadow-md border border-gray-100 card-custom lg:col-span-1'>
+                <h2 class='text-xl font-bold text-gray-800 mb-6 border-b pb-2'>⚙️ Configurar Serie</h2>
+                <div class='mb-4'>
+                    <label class='block text-gray-700 font-medium mb-1'>Tipo de Serie:</label>
+                    <select id='serie-tipo' class='w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-green-200'>
+                        <option value='av'>Anualidad Vencida</option>
+                        <option value='aa'>Anualidad Anticipada</option>
+                        <option value='gac'>Gradiente Aritmético Creciente</option>
+                        <option value='gdc'>Gradiente Aritmético Decreciente</option>
+                        <option value='gg'>Gradiente Geométrico</option>
+                    </select>
+                </div>
+                <div class='mb-4'>
+                    <label class='block text-gray-700 font-medium mb-1'>Cuota Base (A):</label>
+                    <input type='number' id='serie-base' value='150000' class='w-full p-2 border border-gray-300 rounded-lg'>
+                </div>
+                <div class='mb-4'>
+                    <label class='block text-gray-700 font-medium mb-1'>Gradiente (G o g%):</label>
+                    <input type='number' id='serie-gradiente' value='10000' class='w-full p-2 border border-gray-300 rounded-lg'>
+                </div>
+                <div class='mb-4'>
+                    <label class='block text-gray-700 font-medium mb-1'>Tasa interés periódica (%):</label>
+                    <input type='number' id='serie-tasa' value='1.5' step='0.1' class='w-full p-2 border border-gray-300 rounded-lg'>
+                </div>
+                <div class='mb-6'>
+                    <label class='block text-gray-700 font-medium mb-1'>Número de Cuotas:</label>
+                    <input type='number' id='serie-periodos' min='1' max='500' step='1' value='10' class='w-full p-2 border border-gray-300 rounded-lg'>
+                </div>
+                <button onclick='calcularSeries()' class='w-full bg-emerald-600 text-white py-3 rounded-lg font-bold hover:bg-emerald-700 transition shadow-md'>Simular Serie</button>
+            </div>
+
+            <div class='lg:col-span-2 space-y-6'>
+                <div class='bg-white p-6 rounded-2xl shadow-md border border-gray-100'>
+                    <h3 class='text-xl font-bold text-gray-800 mb-4'>📊 Distribución del Flujo de Caja</h3>
+                    <div style='height: 300px;'><canvas id='chart-series'></canvas></div>
+                </div>
+                <div class='bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl'>
+                    <h4 class='font-bold text-emerald-800 text-lg'>Resultados Obtenidos</h4>
+                    <p id='serie-resultados-texto' class='text-emerald-700 mt-1 font-medium'>Simula una serie para ver sus características y valores presentes.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: VPN -->
+        <div id='content-vpn' class='tab-content hidden grid grid-cols-1 lg:grid-cols-3 gap-8'>
+            <div class='bg-white p-6 rounded-2xl shadow-md border border-gray-100 lg:col-span-1'>
+                <h2 class='text-xl font-bold text-gray-800 mb-6 border-b pb-2'>💼 Evaluación de Proyectos</h2>
+                <div class='mb-4'>
+                    <label class='block text-gray-700 font-medium mb-1'>Inversión Inicial ($):</label>
+                    <input type='number' id='vpn-inversion' value='5000000' class='w-full p-2 border border-gray-300 rounded-lg'>
+                </div>
+                <div class='mb-4'>
+                    <label class='block text-gray-700 font-medium mb-1'>Tasa de Descuento (TIO %):</label>
+                    <input type='number' id='vpn-tasa' value='12' class='w-full p-2 border border-gray-300 rounded-lg'>
+                </div>
+                <div class='mb-6'>
+                    <label class='block text-gray-700 font-medium mb-1'>Flujos de Caja (Separados por coma):</label>
+                    <input type='text' id='vpn-flujos' value='1500000, 1800000, 2200000, 2500000' class='w-full p-2 border border-gray-300 rounded-lg'>
+                </div>
+                <button onclick='calcularVPN()' class='w-full bg-cyan-600 text-white py-3 rounded-lg font-bold hover:bg-cyan-700 transition shadow-md'>Calcular VPN</button>
+            </div>
+
+            <div class='lg:col-span-2 space-y-6'>
+                <div class='bg-white p-6 rounded-2xl shadow-md border border-gray-100'>
+                    <h3 class='text-xl font-bold text-gray-800 mb-4'>📊 Sensibilidad del VPN</h3>
+                    <div style='height: 300px;'><canvas id='chart-vpn'></canvas></div>
+                </div>
+                <div id='vpn-resultado-caja' class='p-6 rounded-2xl shadow-md text-white font-bold text-center text-xl bg-slate-400'>
+                    Ingresa los datos para evaluar la viabilidad del proyecto.
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: CASOS REALES -->
+        <div id='content-casos' class='tab-content hidden space-y-8'>
+            <div class='grid grid-cols-1 md:grid-cols-3 gap-6'>
+                <div onclick='ejecutarCaso(1)' class='bg-white p-6 rounded-2xl shadow-md border border-orange-100 hover:border-orange-500 cursor-pointer card-custom'>
+                    <div class='text-3xl mb-3'>🚗</div>
+                    <h3 class='text-lg font-bold text-gray-800'>Compra de Vehículo</h3>
+                    <p class='text-gray-500 text-sm mt-1'>Aprende a estructurar las cuotas mensuales de un auto nuevo con interés del 1.25%.</p>
+                </div>
+                <div onclick='ejecutarCaso(2)' class='bg-white p-6 rounded-2xl shadow-md border border-orange-100 hover:border-orange-500 cursor-pointer card-custom'>
+                    <div class='text-3xl mb-3'>☕</div>
+                    <h3 class='text-lg font-bold text-gray-800'>Montar una Cafetería</h3>
+                    <p class='text-gray-500 text-sm mt-1'>Estudia el VPN y evalúa si comprar las máquinas de café es rentable.</p>
+                </div>
+                <div onclick='ejecutarCaso(3)' class='bg-white p-6 rounded-2xl shadow-md border border-orange-100 hover:border-orange-500 cursor-pointer card-custom'>
+                    <div class='text-3xl mb-3'>🏡</div>
+                    <h3 class='text-lg font-bold text-gray-800'>Vivienda con Gradiente</h3>
+                    <p class='text-gray-500 text-sm mt-1'>Créditos con amortización progresiva y cuotas que aumentan de forma lineal.</p>
+                </div>
+            </div>
+            <div id='caso-detalle' class='bg-white p-8 rounded-2xl shadow-md border border-gray-100 hidden'>
+                <h3 id='caso-titulo' class='text-2xl font-bold text-orange-600 mb-4'>Título de Caso</h3>
+                <p id='caso-texto' class='text-gray-700 text-lg leading-relaxed'></p>
+            </div>
+        </div>
+
+        <!-- TAB: RETOS -->
+        <div id='content-ejercicios' class='tab-content hidden space-y-6'>
+            <div class='bg-gradient-to-r from-violet-600 to-indigo-600 p-8 rounded-3xl text-white shadow-xl text-center max-w-2xl mx-auto'>
+                <h2 class='text-2xl font-bold mb-3'>📚 Generador Dinámico de Ejercicios</h2>
+                <p class='text-indigo-100 mb-6'>Obtén ejercicios prácticos únicos con datos aleatorios para repasar y resolver en clase.</p>
+                <button onclick='generarEjercicio()' class='bg-white text-indigo-700 px-8 py-3 rounded-full font-bold shadow-md hover:bg-indigo-50 transition'>Generar Ejercicio</button>
+            </div>
+            <div id='ejercicio-caja' class='bg-white p-8 rounded-2xl shadow-md max-w-2xl mx-auto mt-8 border border-gray-100 hidden'>
+                <h3 class='text-lg font-bold text-indigo-600 mb-3' id='ejercicio-tipo'>Tipo de Ejercicio</h3>
+                <p class='text-gray-700 text-lg leading-relaxed italic' id='ejercicio-enunciado'></p>
+                <div class='mt-6 bg-slate-50 p-4 rounded-xl text-sm text-gray-500'>
+                    💡 <b>Tip de Clase:</b> Resuélvelo manualmente en una hoja utilizando fórmulas financieras y usa la pestaña correspondiente del Dashboard para comprobar tus resultados.
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- JavaScript interactivo -->
+    <script>
+        let chartCompuesto, chartSeries, chartVPN;
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('tab-active'));
+            
+            document.getElementById('content-' + tabId).classList.remove('hidden');
+            document.getElementById('tab-' + tabId).classList.add('tab-active');
+        }
+
+        function formatMoney(value) {
+            return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(value);
+        }
+
+        function validarNumero(valor, nombre) {
+            if (!Number.isFinite(valor)) {
+                alert('Revisa el campo: ' + nombre + '. Debes ingresar un número válido.');
+                return false;
+            }
+            return true;
+        }
+
+        // --- INTERÉS COMPUESTO ---
+        function calcularInteresCompuesto() {
+            const P = parseFloat(document.getElementById('ic-capital').value);
+            const i = parseFloat(document.getElementById('ic-tasa').value) / 100;
+            const n = parseInt(document.getElementById('ic-periodos').value, 10);
+
+            if (!validarNumero(P, 'Capital inicial') || !validarNumero(i, 'Tasa de interés')) return;
+            if (!Number.isInteger(n) || n < 1 || n > 600 || i <= -1) {
+                alert('Ingresa entre 1 y 600 períodos y una tasa mayor al -100%.');
+                return;
+            }
+
+            let periodos = [];
+            let saldos = [];
+            for(let t=0; t<=n; t++) {
+                periodos.push('Período ' + t);
+                saldos.push(P * Math.pow(1 + i, t));
+            }
+
+            document.getElementById('ic-resultado').innerText = formatMoney(saldos[n]);
+            document.getElementById('ic-intereses').innerText = formatMoney(saldos[n] - P);
+
+            if(chartCompuesto) chartCompuesto.destroy();
+            const ctx = document.getElementById('chart-compuesto').getContext('2d');
+            chartCompuesto = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: periodos,
+                    datasets: [{
+                        label: 'Saldo Acumulado ($)',
+                        data: saldos,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // --- ANUALIDADES & GRADIENTES ---
+        function calcularSeries() {
+            const tipo = document.getElementById('serie-tipo').value;
+            const A = parseFloat(document.getElementById('serie-base').value);
+            const G = parseFloat(document.getElementById('serie-gradiente').value);
+            const i = parseFloat(document.getElementById('serie-tasa').value) / 100;
+            const n = parseInt(document.getElementById('serie-periodos').value, 10);
+
+            if (!validarNumero(A, 'Cuota base') || !validarNumero(G, 'Gradiente') || !validarNumero(i, 'Tasa de interés')) return;
+            if (!Number.isInteger(n) || n < 1 || n > 500 || i <= -1) {
+                alert('Ingresa entre 1 y 500 cuotas y una tasa mayor al -100%.');
+                return;
+            }
+            if (tipo === 'gg' && G / 100 <= -1) {
+                alert('En el gradiente geométrico, el crecimiento debe ser mayor al -100%.');
+                return;
+            }
+
+            let flujos = [];
+            let desc = '';
+            let vp = 0;
+            const gVal = G / 100;
+
+            if (tipo === 'av' || tipo === 'aa') {
+                for(let t=0; t<n; t++) flujos.push(A);
+                desc = tipo === 'av' ? 'Anualidad Ordinaria Vencida.' : 'Anualidad Anticipada.';
+            } else if (tipo === 'gac') {
+                for(let t=0; t<n; t++) flujos.push(A + (t * G));
+                desc = 'Gradiente Aritmético Creciente.';
+            } else if (tipo === 'gdc') {
+                for(let t=0; t<n; t++) flujos.push(Math.max(0, A - (t * G)));
+                desc = 'Gradiente Aritmético Decreciente.';
+            } else if (tipo === 'gg') {
+                for(let t=0; t<n; t++) flujos.push(A * Math.pow(1 + gVal, t));
+                desc = 'Gradiente Geométrico.';
+            }
+
+            // Se descuentan los flujos según el momento de pago. La anualidad anticipada
+            // empieza en el período cero; las demás empiezan al final del período uno.
+            const desplazamiento = tipo === 'aa' ? 0 : 1;
+            vp = flujos.reduce((acum, flujo, t) => acum + flujo / Math.pow(1 + i, t + desplazamiento), 0);
+            document.getElementById('serie-resultados-texto').innerHTML = `${desc} Valor Presente: <b>${formatMoney(vp)}</b>.`;
+
+            if(chartSeries) chartSeries.destroy();
+            const ctx = document.getElementById('chart-series').getContext('2d');
+            chartSeries = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Array.from({length: n}, (_, i) => 'Pago ' + (i+1)),
+                    datasets: [{
+                        label: 'Cuota ($)',
+                        data: flujos,
+                        backgroundColor: '#10b981',
+                        borderColor: '#059669',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // --- VPN ---
+        function calcularVPN() {
+            const inv = parseFloat(document.getElementById('vpn-inversion').value);
+            const tasa = parseFloat(document.getElementById('vpn-tasa').value) / 100;
+            const flujosStr = document.getElementById('vpn-flujos').value;
+            const flujos = flujosStr.split(',').map(f => parseFloat(f.trim()));
+
+            if (!validarNumero(inv, 'Inversión inicial') || !validarNumero(tasa, 'Tasa de descuento')) return;
+            if (tasa <= -1 || flujos.length === 0 || flujos.some(f => !Number.isFinite(f))) {
+                alert('Verifica la tasa y los flujos: escribe números separados por comas y una tasa mayor al -100%.');
+                return;
+            }
+
+            let vpn = -inv;
+            for(let t=0; t<flujos.length; t++) {
+                vpn += flujos[t] / Math.pow(1 + tasa, t + 1);
+            }
+
+            const caja = document.getElementById('vpn-resultado-caja');
+            caja.className = 'p-6 rounded-2xl shadow-md text-white font-bold text-center text-xl ' + (vpn >= 0 ? 'bg-emerald-600' : 'bg-rose-600');
+            caja.innerHTML = `VPN Calculado: ${formatMoney(vpn)} <br> <span class='text-sm font-normal'>El proyecto es ${vpn >= 0 ? 'VIABLE 👍' : 'NO VIABLE 👎'}</span>`;
+
+            // Generar curva de sensibilidad del VPN
+            let tasasPrueba = [];
+            let vpnsPrueba = [];
+            for (let r=0; r<=50; r+=2) {
+                tasasPrueba.push(r + '%');
+                let rDec = r / 100;
+                let vpnP = -inv;
+                for(let t=0; t<flujos.length; t++) {
+                    vpnP += flujos[t] / Math.pow(1 + rDec, t + 1);
+                }
+                vpnsPrueba.push(vpnP);
+            }
+
+            if(chartVPN) chartVPN.destroy();
+            const ctx = document.getElementById('chart-vpn').getContext('2d');
+            chartVPN = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: tasasPrueba,
+                    datasets: [{
+                        label: 'VPN del Proyecto ($)',
+                        data: vpnsPrueba,
+                        borderColor: '#06b6d4',
+                        backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // --- CASOS ---
+        function ejecutarCaso(num) {
+            const caja = document.getElementById('caso-detalle');
+            const titulo = document.getElementById('caso-titulo');
+            const texto = document.getElementById('caso-texto');
+            caja.classList.remove('hidden');
+
+            if (num === 1) {
+                titulo.innerText = "🚗 Caso: Financiación de Carro Nuevo";
+                texto.innerHTML = "Deseas adquirir un carro de $45,000,000 COP. Consigues financiación por el 70% ($31,500,000) a 48 meses al 1.25% mensual. Mediante la fórmula de <b>Anualidad Vencida</b>, tu cuota fija a pagar cada mes será de <b>$876,669 COP</b>.";
+            } else if (num === 2) {
+                titulo.innerText = "☕ Caso: Emprender una Cafetería";
+                texto.innerHTML = "Inversión inicial de $12,000,000 COP en equipamiento. Flujos proyectados de $3.5M, $4.2M, $5M y $6.5M. Con un costo de oportunidad (TIO) del 15%, el VPN es <b>$1,223,259 COP</b>. El proyecto resulta <b>VIABLE</b>.";
+            } else if (num === 3) {
+                titulo.innerText = "🏡 Caso: Crédito Hipotecario con Gradiente";
+                texto.innerHTML = "Para adquirir tu casa, firmas un plan de cuotas crecientes en donde la primera cuota es de $500,000 COP y sube $10,000 cada mes por un año. A una tasa del 1% mensual, el valor financiado final equivale a <b>$6,233,226 COP</b>.";
+            }
+        }
+
+        // --- EJERCICIOS ---
+        function generarEjercicio() {
+            const ejercicios = [
+                "Un ahorrador deposita $2,500,000 COP en un CDT a 12 meses con un interés del 1.8% mensual compuesto. ¿Cuál será el saldo al finalizar el plazo?",
+                "¿Qué cuota mensual debe pagar un estudiante que adquiere un computador de $3,000,000 COP financiado a 6 meses con cuotas anticipadas al 1.5% mensual?",
+                "Calcula el VPN de un proyecto que requiere una inversión de $10,000,000 COP y genera retornos de $4M, $5M y $3M para el año 1, 2 y 3 respectivamente, a una tasa del 12% anual."
+            ];
+            const index = Math.floor(Math.random() * ejercicios.length);
+            
+            document.getElementById('ejercicio-caja').classList.remove('hidden');
+            document.getElementById('ejercicio-tipo').innerText = '🔥 Reto Aleatorio de Clase';
+            document.getElementById('ejercicio-enunciado').innerText = ejercicios[index];
+        }
+
+        // Carga inicial
+        window.onload = function() {
+            calcularInteresCompuesto();
+            calcularSeries();
+            calcularVPN();
+        };
+    </script>
+</body>
+</html>
